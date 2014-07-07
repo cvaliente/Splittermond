@@ -1,5 +1,6 @@
 from random import shuffle
 
+
 class Kampf:        
     Positions = {}  
     def __init__(self, verbose=0):
