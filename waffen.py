@@ -1,15 +1,9 @@
-class Waffe():
-    def __init__(self, name, Schaden, WGS, Fertigkeit, Last, Haerte,Merkmal = {}):    
-        self.name = name
-        self.Schaden = Schaden
-        self.WGS = WGS
-        self.Fertigkeit = Fertigkeit
-        self.Last = Last
-        self.Haerte = Haerte
-        self.Merkmal = Merkmal
-        
+from collections import namedtuple
+
+Waffe = namedtuple('Waffe', 'name Schaden WGS Fertigkeit Last Haerte Merkmal')
+
 		
-Dornenhandschuh = Waffe('Dornenhandschuh', [1, 6, 0], 5, 'Klingenwaffen', 2, 7, {'Entwaffnend' : 1, 'Defensiv': 2, 'Parierwaffe': 1})
+Dornenhandschuh =Waffe('Dornenhandschuh', [1, 6, 0], 5, 'Klingenwaffen', 2, 7, {'Entwaffnend' : 1, 'Defensiv': 2, 'Parierwaffe': 1})
 Katar = Waffe('Katar', [1, 6, +1], 6, 'Klingenwaffen', 2, 7, {'Scharf':2})
 Liandia = Waffe('Liandia', [1, 6, +1], 6, 'Klingenwaffen', 2, 7, {'Entwaffnend' : 1, 'Defensiv': 1, 'Parierwaffe': 0})
 Schlagring = Waffe('Schlagring', [1, 6, 0], 5, 'Klingenwaffen', 2, 7, {'Scharf':2})
@@ -72,7 +66,7 @@ Morgenstern = Waffe('Morgenstern', [1, 10, +5], 10, 'Klingenwaffen', 2, 7, {'Unh
 Peitsche = Waffe('Peitsche', [1, 10, -2], 15, 'Klingenwaffen', 2, 7, {'Entwaffnend' : 3, 'Improvisiert': 1, 'Umklammern': 1, 'Lange Waffe': 1, 'Unhandlich': 1})
 
 
-WaffenlisteEH = {Anderthalbhander,Kettensichel,Morgenstern,Peitsche,
+WaffenlisteEH = [Anderthalbhander,Kettensichel,Morgenstern,Peitsche,
 Schlagring,
 Katar,
 Liandia,
@@ -105,8 +99,9 @@ ValkyrjaSpeer,
 Vangarasstab,
 WurfspeerNK,
 Zackenspiess
-}
-WaffenlisteZH = {AnderthalbhanderZH,
+]
+
+WaffenlisteZH = [AnderthalbhanderZH,
 Pfauenfeder,KettensichelZH,Kriegsflegel,
 Zweihander,
 Kriegshammer,
@@ -120,4 +115,4 @@ Hellebarde,
 Kampfstab,
 Lanze,
 Sturmsense,VangarasstabZH,ZackenspiessZH,SpeerZH,KlingenstabZH
-}
+]
