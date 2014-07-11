@@ -5,7 +5,22 @@ from ruestung import *
 
 Aderion = Charakter(
                     name="Aderion von Langschwert",
-                    Waffenfertigkeit=11,
+                    Waffenfertigkeit=13,
+                    Verteidigung=20,
+                    SchadensReduktion=0,
+                    Lebenspunkte=7,
+                    StartINI=9,
+                    AngriffSchwelle=40,
+                    ParadeSicherheitsSchwelle=0,
+                    ParadeSchwelle=0,
+                    ParadeRisikoSchwelle=0,
+                    Waffe=Langschwert,
+                    Ruestung=Hybrid
+                    )    
+
+Bederion = Charakter(
+                    name="Bederion von Breitschwert",
+                    Waffenfertigkeit=13,
                     Verteidigung=20,
                     SchadensReduktion=0,
                     Lebenspunkte=7,
@@ -16,21 +31,6 @@ Aderion = Charakter(
                     ParadeRisikoSchwelle=0,
                     Waffe=Breitschwert,
                     Ruestung=Hybrid
-                    )    
-
-Bederion = Charakter(
-                    name="Bederion von Breitschwert",
-                    Waffenfertigkeit=11,
-                    Verteidigung=20,
-                    SchadensReduktion=0,
-                    Lebenspunkte=7,
-                    StartINI=9,
-                    AngriffSchwelle=40,
-                    ParadeSicherheitsSchwelle=0,
-                    ParadeSchwelle=0,
-                    ParadeRisikoSchwelle=0,
-                    Waffe=Breitschwert,
-                    Ruestung=Ausweichen
                     )        
                     
 Cederion = Charakter(
