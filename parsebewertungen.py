@@ -1,6 +1,7 @@
 import urllib.request
+import statistics
 from bs4 import BeautifulSoup
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 from operator import attrgetter
 
 def bbcode(tag, string, value = None):
@@ -46,7 +47,7 @@ class tableheaderrow(tablerow):
 
 def getProdukte(bewertungsthreads):
     
-    Produkt = namedtuple('Produkt','name id url Stimmen Durchschnitt')
+    Produkt = namedtuple('Produkt','name id url Stimmen Durchschnitt Median')
     Produkte = []
     baseurl = "http://forum.splittermond.de/index.php?topic=%d.0"
     
@@ -59,31 +60,37 @@ def getProdukte(bewertungsthreads):
         options = polls.findAll('dt',{'class':'middletext'})
         votes = polls.findAll('span',{'class':'percentage'})
         ergebnis = dict(zip([[int(s) for s in option.string.split() if s.isdigit()][0] for option in options], [int(vote.string.split(' ')[0]) for vote in votes]))
+        einzelvotes = [item for sublist in [[k] * v for k,v in ergebnis.items()] for item in sublist]
         try:
-            average = str(round(sum(k*v for k,v in ergebnis.items()) / sum(v for k,v in ergebnis.items()),2))
+            durchschnitt = str(round(statistics.mean(einzelvotes),2)) 
+            median = str(statistics.median(einzelvotes))
+            stimmen = len(einzelvotes)
         except ZeroDivisionError:
-            average = 'No votes yet'
-        Produkte.append(Produkt(Produktname, threadid, url, str(sum(v for k,v in ergebnis.items())), average))
+            durchschnitt = 'No votes yet'
+            median = 'No votes yet'
+        Produkte.append(Produkt(Produktname, threadid, url, stimmen, durchschnitt, median))
     return Produkte
 
 
 def generateTable(bewertungsthreads):
-    return bbtable([tableheaderrow(['Platz', 'Bewertung', 'Stimmen', 'Produkt'])] 
-            + [tablerow([index+1, element.Durchschnitt, element.Stimmen, bbcodeurl(element.url, element.name)]) 
+    return bbtable([tableheaderrow(['Platz', 'Bewertung', 'Median', 'Stimmen', 'Produkt'])] 
+            + [tablerow([index+1, element.Durchschnitt, element.Median, element.Stimmen, bbcodeurl(element.url, element.name)]) 
                for index, element in enumerate(sorted(bewertungsthreads, key=attrgetter('Durchschnitt')))])
 
-abenteuer = [2003, 2097,2098, 2099, 2100, 2101]
-spielhilfen = [1676, 1418]
+Produktthreads = OrderedDict([
+('Spielhilfen' , [1676, 1418]),
+('Kaufabenteuer' ,[2003, 2097]),
+('Kostenlos verfügbare Abenteuer' , [2097,2098, 2099, 2100, 2101])
+])
 
-bewertungen = getProdukte(abenteuer+spielhilfen)
 
-Abenteuerbewertungen = [Abenteuer for Abenteuer in bewertungen if Abenteuer.id in abenteuer]
-
-Spielhilfenbewertungen = [Spielhilfe for Spielhilfe in bewertungen if Spielhilfe.id in spielhilfen]
+bewertungen = set([item for sublist in [getProdukte(threads) for threads in Produktthreads.values()] for item in sublist])
 print('Hier die Sammlung aller Produktbewertungsthreads, inklusive Durchschnittsbewertung und Ranking.')
 print('Ich versuche das Ganze auf aktuellen Stand zu halten. :)')
 print('Noch ist es nicht sonderlich spektakulär, einfach weil es noch nicht viele Produkte gibt. Aber ich hoffe das ändert sich mit der Zeit. :)')
-print(bbbold('\r\nSpielhilfen'))
-print(generateTable(Spielhilfenbewertungen))
-print(bbbold('\r\nAbenteuer'))
-print(generateTable(Abenteuerbewertungen))
+
+for key, value in Produktthreads.items():
+    print('\r\n'+bbbold(key))
+    print(generateTable([Spielhilfe for Spielhilfe in bewertungen if Spielhilfe.id in value]))
+    
+    
