@@ -80,7 +80,7 @@ def generateTable(bewertungsthreads):
 Produktthreads = OrderedDict([
 ('Spielhilfen' , [1676, 1418]),
 ('Kaufabenteuer' ,[2003, 2097]),
-('Kostenlos verfügbare Abenteuer' , [2097,2098, 2099, 2100, 2101])
+('Kostenlos verfügbare Abenteuer' , [2097,2098, 2099, 2100, 2101,2219])
 ])
 
 
