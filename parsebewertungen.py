@@ -63,11 +63,15 @@ def getProdukte(bewertungsthreads):
         einzelvotes = [item for sublist in [[k] * v for k,v in ergebnis.items()] for item in sublist]
         try:
             durchschnitt = str(round(statistics.mean(einzelvotes),2)) 
-            median = str(statistics.median(einzelvotes))
+            median = statistics.median(einzelvotes)
+            if int(median) == median:
+                median = int(median)
+            median = str(median)
             stimmen = len(einzelvotes)
-        except ZeroDivisionError:
+        except (ZeroDivisionError, statistics.StatisticsError) as e:
             durchschnitt = 'No votes yet'
             median = 'No votes yet'
+            stimmen = 0
         Produkte.append(Produkt(Produktname, threadid, url, stimmen, durchschnitt, median))
     return Produkte
 
@@ -80,7 +84,7 @@ def generateTable(bewertungsthreads):
 Produktthreads = OrderedDict([
 ('Spielhilfen' , [1676, 1418]),
 ('Kaufabenteuer' ,[2003, 2097]),
-('Kostenlos verfügbare Abenteuer' , [2097,2098, 2099, 2100, 2101])
+('Kostenlos verfügbare Abenteuer' , [2097,2098, 2099, 2100, 2101, 2219])
 ])
 
 
