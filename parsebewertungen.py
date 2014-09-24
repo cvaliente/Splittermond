@@ -3,6 +3,7 @@ import statistics
 from bs4 import BeautifulSoup
 from collections import namedtuple, OrderedDict
 from operator import attrgetter
+from multiprocessing.dummy import Pool as ThreadPool 
 
 def bbcode(tag, string, value = None):
     if value:
@@ -45,14 +46,18 @@ class tableheaderrow(tablerow):
     def cellify(self, rowfield):
         return str('[td]' + bbbold(rowfield)+bbtt('   ')+'[/td]')
 
-def getProdukte(bewertungsthreads):
-    
-    Produkt = namedtuple('Produkt','name id url Stimmen Durchschnitt Median')
-    Produkte = []
-    baseurl = "http://forum.splittermond.de/index.php?topic=%d.0"
-    
-    for threadid in bewertungsthreads:
-        url=baseurl % threadid
+class ProduktParser():
+    def __init__(self, Produktthreads, Produkt = namedtuple('Produkt','name id url Stimmen Durchschnitt Median'), Produkte = [], baseurl = "http://forum.splittermond.de/index.php?topic=%d.0"):
+        self.Produkt = Produkt
+        self.Produkte = Produkte
+        self.baseurl = baseurl
+        self.Produktthreads = Produktthreads
+        self.bewertungen = set([item for sublist in self.Produktthreads.values() for item in sublist])
+        self.pool = ThreadPool(4) 
+        self.getProdukte(self.bewertungen)
+        
+    def getProdukt(self, threadid):
+        url=self.baseurl % threadid
         page=urllib.request.urlopen(url)
         soup = BeautifulSoup(page.read())
         Produktname = soup.find('title').string.split('/')[0].strip()
@@ -72,8 +77,16 @@ def getProdukte(bewertungsthreads):
             durchschnitt = 'No votes yet'
             median = 'No votes yet'
             stimmen = 0
-        Produkte.append(Produkt(Produktname, threadid, url, stimmen, durchschnitt, median))
-    return Produkte
+        return Produktname, threadid, url, stimmen, durchschnitt, median
+    
+    def appendProdukt(self, threadid):
+        self.Produkte.append(self.Produkt(*self.getProdukt(threadid)))
+    
+    def getProdukte(self, bewertungsthreads): 
+        self.pool.map(self.appendProdukt, bewertungsthreads)
+        
+    
+        
 
 
 def generateTable(bewertungsthreads):
@@ -84,17 +97,16 @@ def generateTable(bewertungsthreads):
 Produktthreads = OrderedDict([
 ('Spielhilfen' , [1676, 1418]),
 ('Kaufabenteuer' ,[2003, 2097]),
-('Kostenlos verfügbare Abenteuer' , [2097,2098, 2099, 2100, 2101,2219])
+('Kostenlos verfügbare Abenteuer' , [2097,2098, 2099, 2100, 2101])
 ])
+SplittermondParser = ProduktParser(Produktthreads= Produktthreads)
 
-
-bewertungen = set([item for sublist in [getProdukte(threads) for threads in Produktthreads.values()] for item in sublist])
 print('Hier die Sammlung aller Produktbewertungsthreads, inklusive Durchschnittsbewertung und Ranking.')
 print('Ich versuche das Ganze auf aktuellen Stand zu halten. :)')
 print('Noch ist es nicht sonderlich spektakulär, einfach weil es noch nicht viele Produkte gibt. Aber ich hoffe das ändert sich mit der Zeit. :)')
 
 for key, value in Produktthreads.items():
     print('\r\n'+bbbold(key))
-    print(generateTable([Spielhilfe for Spielhilfe in bewertungen if Spielhilfe.id in value]))
+    print(generateTable([Spielhilfe for Spielhilfe in SplittermondParser.Produkte if Spielhilfe.id in value]))
     
     
