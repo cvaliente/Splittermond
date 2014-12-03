@@ -6,8 +6,8 @@ sicherheitmeister ={}
 risikomeister ={}
 normalmeister ={}
 sortiertesorten = [sicherheit,normal,risiko,sicherheitmeister,normalmeister,risikomeister]
-sorten = {'Sicherheitswurf':sicherheit, 'Normaler Wurf':normal, 'Risikowurf':risiko, 'Sicherheitswurf als Meister':sicherheitmeister, 
-          'Normaler Wurf als Meister':normalmeister, 'Risikowurf als Meister':risikomeister}
+sorten = {'Sicherheitswurf':sicherheit, 'Normaler Wurf':normal, 'Risikowurf':risiko, 'Sicherheitswurf als Großmeister':sicherheitmeister, 
+          'Normaler Wurf als Großmeister':normalmeister, 'Risikowurf als Großmeister':risikomeister}
 
 for ergebnis in range(1,22):
     for element in sorten:
@@ -37,16 +37,27 @@ for w1 in range(1,11):
                     else:                        
                         risikomeister[sum(sorted([w1,w2,w3,w4,w5])[3:5])] +=1
 
-for ergebnis in sorten:
+for ergebnis in sortiertesorten:
     summe = 0
     durchschnitt = 0
-   
-    for x in sorten[ergebnis]:
-        v = sorten[ergebnis][x]*100/i
-        durchschnitt += sorten[ergebnis][x]*x
-        sorten[ergebnis][x] = [round(sorten[ergebnis][x]*100/i,2),round(100-summe,2)]        
-        summe +=v   
-    sorten[ergebnis][21] = durchschnitt/i
+    for k, v in sorten.items():
+         if v == ergebnis:
+            print('\r\r=== ' + k + ' ===\r{| class="wikitable sortable"')
+            print('|-\r! Ergebnis !! Wahrscheinlichkeit !! Kumulierte Wahrscheinlichkeit')
+            for x in sorten[k]:
+                v = sorten[k][x]*100/i
+                durchschnitt += sorten[k][x]*x
+                sorten[k][x] = [round(sorten[k][x]*100/i,2),round(100-summe,2)]        
+                summe +=v 
+                if x < 21:  
+                    print('|-\r| '+ str(x) + ' || ' + str(sorten[k][x][0]) + ' || ' + str(sorten[k][x][1]))
+            sorten[k][21] = durchschnitt/i
+            print('|-\r| Durchschnitt: || ' + str(durchschnitt/i) + ' || \r|}')
+    
+    
+    
+
+'''
 tablestring = '[table]'
 for i in range(1,3):
     tablestring += '[tr][td]'
@@ -70,7 +81,8 @@ for i in range(1,3):
                 
 
 tablestring += '[/table]'
-print(tablestring)
-                
+'''
+
+
     
 

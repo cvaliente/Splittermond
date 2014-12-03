@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from collections import namedtuple, OrderedDict
 from operator import attrgetter
 from multiprocessing.dummy import Pool as ThreadPool 
+import time
 
 def bbcode(tag, string, value = None):
     if value:
@@ -54,7 +55,7 @@ class ProduktParser():
         self.Produktthreads = Produktthreads
         self.bewertungen = set([item for sublist in self.Produktthreads.values() for item in sublist])
         self.pool = ThreadPool(4) 
-        self.getProdukte(self.bewertungen)
+        self.pool.map(self.getProdukt, self.bewertungen)
         
     def getProdukt(self, threadid):
         url=self.baseurl % threadid
@@ -77,26 +78,18 @@ class ProduktParser():
             durchschnitt = 'No votes yet'
             median = 'No votes yet'
             stimmen = 0
-        return Produktname, threadid, url, stimmen, durchschnitt, median
+        self.Produkte.append(self.Produkt(Produktname, threadid, url, stimmen, durchschnitt, median))
     
-    def appendProdukt(self, threadid):
-        self.Produkte.append(self.Produkt(*self.getProdukt(threadid)))
     
-    def getProdukte(self, bewertungsthreads): 
-        self.pool.map(self.appendProdukt, bewertungsthreads)
-        
-    
-        
-
 
 def generateTable(bewertungsthreads):
     return bbtable([tableheaderrow(['Platz', 'Bewertung', 'Median', 'Stimmen', 'Produkt'])] 
             + [tablerow([index+1, element.Durchschnitt, element.Median, element.Stimmen, bbcodeurl(element.url, element.name)]) 
                for index, element in enumerate(sorted(bewertungsthreads, key=attrgetter('Durchschnitt')))])
-
+tic = time.clock()
 Produktthreads = OrderedDict([
-('Spielhilfen' , [1676, 1418]),
-('Kaufabenteuer' ,[2003, 2097]),
+('Spielhilfen' , [1676, 1418, 2361]),
+('Kaufabenteuer' ,[2003, 2097, 2360]),
 ('Kostenlos verfügbare Abenteuer' , [2097,2098, 2099, 2100, 2101])
 ])
 SplittermondParser = ProduktParser(Produktthreads= Produktthreads)
@@ -108,5 +101,5 @@ print('Noch ist es nicht sonderlich spektakulär, einfach weil es noch nicht vie
 for key, value in Produktthreads.items():
     print('\r\n'+bbbold(key))
     print(generateTable([Spielhilfe for Spielhilfe in SplittermondParser.Produkte if Spielhilfe.id in value]))
-    
-    
+toc = time.clock()    
+# print(toc - tic)   
