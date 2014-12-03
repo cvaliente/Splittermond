@@ -6,6 +6,24 @@ from operator import attrgetter
 from multiprocessing.dummy import Pool as ThreadPool 
 import time
 
+
+
+# Collection of Thread IDs in several categories
+Produktthreads = OrderedDict([
+('Spielhilfen' , [1676, 1418, 2361]),
+('Kaufabenteuer' ,[2003, 2097, 2360]),
+('Kostenlos verfügbare Abenteuer' , [2097,2098, 2099, 2100, 2101])
+])
+
+
+# URL of a thread (%d will be thread_id)
+baseurl = "http://forum.splittermond.de/index.php?topic=%d.0"
+
+# Number of parallel threads (should be equal to number of CPU cores)
+concurrent_parses = 4 
+
+
+
 def bbcode(tag, string, value = None):
     if value:
         return'['+tag+'='+value+']'+string+'[/'+tag+']'
@@ -48,13 +66,13 @@ class tableheaderrow(tablerow):
         return str('[td]' + bbbold(rowfield)+bbtt('   ')+'[/td]')
 
 class ProduktParser():
-    def __init__(self, Produktthreads, Produkt = namedtuple('Produkt','name id url Stimmen Durchschnitt Median'), Produkte = [], baseurl = "http://forum.splittermond.de/index.php?topic=%d.0"):
+    def __init__(self, Produktthreads, Produkt = namedtuple('Produkt','name id url Stimmen Durchschnitt Median'), Produkte = [], baseurl = baseurl):
         self.Produkt = Produkt
         self.Produkte = Produkte
         self.baseurl = baseurl
         self.Produktthreads = Produktthreads
         self.bewertungen = set([item for sublist in self.Produktthreads.values() for item in sublist])
-        self.pool = ThreadPool(4) 
+        self.pool = ThreadPool(concurrent_parses) 
         self.pool.map(self.getProdukt, self.bewertungen)
         
     def getProdukt(self, threadid):
@@ -86,12 +104,8 @@ def generateTable(bewertungsthreads):
     return bbtable([tableheaderrow(['Platz', 'Bewertung', 'Median', 'Stimmen', 'Produkt'])] 
             + [tablerow([index+1, element.Durchschnitt, element.Median, element.Stimmen, bbcodeurl(element.url, element.name)]) 
                for index, element in enumerate(sorted(bewertungsthreads, key=attrgetter('Durchschnitt')))])
-tic = time.clock()
-Produktthreads = OrderedDict([
-('Spielhilfen' , [1676, 1418, 2361]),
-('Kaufabenteuer' ,[2003, 2097, 2360]),
-('Kostenlos verfügbare Abenteuer' , [2097,2098, 2099, 2100, 2101])
-])
+
+
 SplittermondParser = ProduktParser(Produktthreads= Produktthreads)
 
 print('Hier die Sammlung aller Produktbewertungsthreads, inklusive Durchschnittsbewertung und Ranking.')
