@@ -7,8 +7,8 @@ import pprint
 from copy import deepcopy
 
 # import cProfile
-Testkampf = Kampf(1)
-Testkampf.Runden = 1
+Testkampf = Kampf(1000)
+Testkampf.Runden = 1000
 Testkampf.verbose = 2
 
 # Kaempft(Testkampf, Bederion, Aderion)
