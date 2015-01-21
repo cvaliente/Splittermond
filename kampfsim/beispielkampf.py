@@ -8,7 +8,7 @@ from copy import deepcopy
 
 # import cProfile
 Testkampf = Kampf(1000)
-Testkampf.Runden = 1000
+Testkampf.Runden = 10
 Testkampf.verbose = 2
 
 # Kaempft(Testkampf, Bederion, Aderion)

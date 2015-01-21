@@ -1,18 +1,19 @@
 from random import shuffle
 
-
 class Kampf:        
     Positions = {}  
     def __init__(self, verbose=0):
         self.verbose = verbose
         self.Runden = 1
         self.Teilnehmer = []
+        self.Tickleiste = Tickleiste()
         
     def neustartKampf(self):
         
         self.Runden -= 1
         
         shuffle(self.Teilnehmer)
+        self.Tickleiste.leere()
         
         for Charakter in self.Teilnehmer:
             Charakter.neustartCharakter()
@@ -28,9 +29,14 @@ class Kampf:
     def Arena(self, Angreifer, Verteidiger):
         if self.Runden > 10 and self.verbose > 0:
             self.verbose = 0
+            
+        for Kaempfer in (Angreifer, Verteidiger):
+            Kaempfer.Tickleiste = self.Tickleiste      
+            Kaempfer.verbose = self.verbose  
+            self.Teilnehmer.append(Kaempfer)
         
-        self.Teilnehmer.append(Angreifer)
-        self.Teilnehmer.append(Verteidiger)
+        Angreifer.Gegner = Verteidiger
+        Verteidiger.Gegner = Angreifer    
         
         for Charakter in self.Teilnehmer:
             Charakter.siege = 0
@@ -42,12 +48,13 @@ class Kampf:
             while Verteidiger.hp > 0 and Angreifer.hp > 0:
                 if self.verbose >= 1:
                     print("####################")
-                    print("Ticks:" + str(Angreifer.name) + " " + str(Angreifer.TickPosition) + " " + str(Verteidiger.name) + " " + str(Verteidiger.TickPosition))
+                    print("Tickleiste: " + str(self.Tickleiste.Position))
+                    print("Ticks:" + str(Angreifer.name) + " " + str(self.Tickleiste.bestimmePosition(Angreifer)) + " " + str(Verteidiger.name) + " " + str(self.Tickleiste.bestimmePosition(Verteidiger)))
                     print("LP:" + str(Angreifer.name) + " " + str(Angreifer.hp) + " " + str(Verteidiger.name) + " " + str(Verteidiger.hp))
                     print("Fokus:" + str(Angreifer.name) + " " + str(Angreifer.Fokus) + " " + str(Verteidiger.name) + " " + str(Verteidiger.Fokus))
                     print("---")
                 
-                min(self.Positions, key=self.Positions.get).waehleAktion(max(self.Positions, key=self.Positions.get), self.verbose)
+                self.Tickleiste.tick()
         
             if Angreifer.hp > 0:
                 self.SiegerMeldung(Angreifer)
@@ -61,7 +68,39 @@ class Kampf:
     
 
     
+class Tickleiste():
+    def __init__(self):
+        self.Tickleiste = {}
+        self.Position = -20
+        
+    def initiere(self, Teilnehmer, Tick):
+        if self.Tickleiste.get(Tick) is not None:
+            self.Tickleiste[Tick].append(Teilnehmer)
+        else:
+            self.Tickleiste[Tick] = [Teilnehmer]
+        
+    def bestimmePosition(self,Teilnehmer):
+        for tick in self.Tickleiste:
+            if Teilnehmer in self.Tickleiste[tick]:
+                return tick
+                break
+            
+    def bewege(self, Teilnehmer, Ticks):
+        tick = self.bestimmePosition(Teilnehmer)
+        self.Tickleiste[tick].remove(Teilnehmer)                
+        self.initiere(Teilnehmer, tick+Ticks)
     
+    def leere(self):
+        self.Tickleiste = {}
+        self.Position = -20
+        
+    def loesche(self,Teilnehmer):
+        self.Tickleiste[self.bestimmePosition(Teilnehmer)].remove(Teilnehmer)
+                
+    def tick(self):
+        while self.Tickleiste.get(self.Position) is not None and self.Tickleiste.get(self.Position):
+            self.Tickleiste.get(self.Position)[0].waehleAktion()            
+        self.Position += 1
     
 
 
