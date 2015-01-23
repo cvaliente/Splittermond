@@ -2,6 +2,9 @@ class kampfposition():
     def __init__(self, Position = 'stehend'):
         self.Position = Position
         
+    def neu(self,Position):
+        self.Position = Position
+        
     def eigen(self):
         if self.Position == 'Stehend': return 0
         elif self.Position == 'Kniend, Fernkampf': return 0

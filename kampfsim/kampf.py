@@ -1,10 +1,10 @@
 from random import shuffle
+import logging
 
 class Kampf:        
     Positions = {}  
-    def __init__(self, verbose=0):
-        self.verbose = verbose
-        self.Runden = 1
+    def __init__(self, Runden = 1):
+        self.Runden = Runden
         self.Teilnehmer = []
         self.Tickleiste = Tickleiste()
         
@@ -20,23 +20,18 @@ class Kampf:
         
             
     def SiegerMeldung(self, Teilnehmer):
-        Teilnehmer.siege += 1
-        if self.verbose >= 2:
-            print("---------------------")
-            print(Teilnehmer.name + " gewinnt!")
-            print("---------------------")
+        for ang in Teilnehmer:
+            ang.siege += 1
+        logging.warning("---------------------")
+        logging.warning(', '.join(ang.name for ang in Teilnehmer) + " gewinnt!")
+        logging.warning("---------------------")
             
     def Arena(self, Angreifer, Verteidiger):
-        if self.Runden > 10 and self.verbose > 0:
-            self.verbose = 0
             
-        for Kaempfer in (Angreifer, Verteidiger):
-            Kaempfer.Tickleiste = self.Tickleiste      
-            Kaempfer.verbose = self.verbose  
+        for Kaempfer in Angreifer + Verteidiger:
+            Kaempfer.Tickleiste = self.Tickleiste     
             self.Teilnehmer.append(Kaempfer)
         
-        Angreifer.Gegner = Verteidiger
-        Verteidiger.Gegner = Angreifer    
         
         for Charakter in self.Teilnehmer:
             Charakter.siege = 0
@@ -44,26 +39,31 @@ class Kampf:
         while self.Runden > 0:
             
             self.neustartKampf()
+            
+            logging.info("~~~~~~~~~~ Kampfbeginn ~~~~~~~")
                 
-            while Verteidiger.hp > 0 and Angreifer.hp > 0:
-                if self.verbose >= 1:
-                    print("####################")
-                    print("Tickleiste: " + str(self.Tickleiste.Position))
-                    print("Ticks:" + str(Angreifer.name) + " " + str(self.Tickleiste.bestimmePosition(Angreifer)) + " " + str(Verteidiger.name) + " " + str(self.Tickleiste.bestimmePosition(Verteidiger)))
-                    print("LP:" + str(Angreifer.name) + " " + str(Angreifer.hp) + " " + str(Verteidiger.name) + " " + str(Verteidiger.hp))
-                    print("Fokus:" + str(Angreifer.name) + " " + str(Angreifer.Fokus) + " " + str(Verteidiger.name) + " " + str(Verteidiger.Fokus))
-                    print("---")
+            while sum(max(vtd.hp,0) for vtd in Verteidiger) > 0 and sum(max(ang.hp,0) for ang in Angreifer) > 0:
+                for kaempfer in Angreifer:
+                    kaempfer.Gegner = [geg for geg in Verteidiger if geg.hp > 0][0]
+                for kaempfer in Verteidiger:
+                    kaempfer.Gegner = [geg for geg in Angreifer if geg.hp > 0][0]
+                if self.Tickleiste.tick():
+                    logging.info("####################")
+                    for Kaempfer in Angreifer + Verteidiger:
+                        logging.info("Ticks:" + str(Kaempfer.name) + " " + str(self.Tickleiste.bestimmePosition(Kaempfer)))
+                        logging.info("LP:" + str(Kaempfer.name) + " " + str(Kaempfer.hp))
+                    logging.info("---")
                 
-                self.Tickleiste.tick()
+                
         
-            if Angreifer.hp > 0:
+            if sum(max(ang.hp,0) for ang in Angreifer) > 0:
                 self.SiegerMeldung(Angreifer)
             else:
                 self.SiegerMeldung(Verteidiger)
-        if self.verbose >= 0:
-            print(Angreifer.name + " gewinnt " + str(Angreifer.siege) + " Mal,\n" + Verteidiger.name + " gewinnt " + str(Verteidiger.siege) + " Mal.")
+        for Kaempfer in Angreifer + Verteidiger:
+            logging.info(Kaempfer.name + " gewinnt " + str(Kaempfer.siege) + " Mal.")
         
-        return [Angreifer.siege, Verteidiger.siege]
+        #return [Angreifer.siege, Verteidiger.siege]
     
     
 
@@ -98,9 +98,16 @@ class Tickleiste():
         self.Tickleiste[self.bestimmePosition(Teilnehmer)].remove(Teilnehmer)
                 
     def tick(self):
+        i = False
+        j = False
         while self.Tickleiste.get(self.Position) is not None and self.Tickleiste.get(self.Position):
-            self.Tickleiste.get(self.Position)[0].waehleAktion()            
+            if not j:
+                logging.info("Tickleiste: " + str(self.Position))
+                j = True
+            self.Tickleiste.get(self.Position)[0].waehleAktion()
+            i = True            
         self.Position += 1
+        return i
     
 
 
