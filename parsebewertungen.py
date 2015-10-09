@@ -11,7 +11,7 @@ import time
 # Collection of Thread IDs in several categories
 Produktthreads = OrderedDict([
 ('Spielhilfen' , [1676, 1418, 2361, 2653]),
-('Kaufabenteuer' ,[2003, 2097, 2360]),
+('Kaufabenteuer' ,[2003, 2097, 2360, 2752]),
 ('Kostenlos verfügbare Abenteuer' , [2097,2098, 2099, 2100, 2101, 2652, 2651])
 ])
 
