@@ -3,15 +3,12 @@ import statistics
 from bs4 import BeautifulSoup
 from collections import namedtuple, OrderedDict
 from operator import attrgetter
-from multiprocessing.dummy import Pool as ThreadPool 
-import time
-
-
+from multiprocessing.dummy import Pool as ThreadPool
 
 # Collection of Thread IDs in several categories
 Produktthreads = OrderedDict([
-('Spielhilfen' , [1676, 1418, 2361, 2653]),
-('Kaufabenteuer' ,[2003, 2097, 2360, 2752]),
+('Spielhilfen' , [1676, 1418, 2361, 2653, 3344, 3340, 3345, 3158, 3510]),
+('Kaufabenteuer' ,[2003, 2097, 2360, 2752, 3006, 3343, 3342]),
 ('Kostenlos verfügbare Abenteuer' , [2097,2098, 2099, 2100, 2101, 2652, 2651])
 ])
 
@@ -97,23 +94,22 @@ class ProduktParser():
             median = 'No votes yet'
             stimmen = 0
         self.Produkte.append(self.Produkt(Produktname, threadid, url, stimmen, durchschnitt, median))
+        
     
-    
-
-def generateTable(bewertungsthreads):
-    return bbtable([tableheaderrow(['Platz', 'Bewertung', 'Median', 'Stimmen', 'Produkt'])] 
+    def generateTable(self, bewertungsthreads):
+        return bbtable([tableheaderrow(['Platz', 'Bewertung', 'Median', 'Stimmen', 'Produkt'])] 
             + [tablerow([index+1, element.Durchschnitt, element.Median, element.Stimmen, bbcodeurl(element.url, element.name)]) 
                for index, element in enumerate(sorted(bewertungsthreads, key=attrgetter('Durchschnitt')))])
+        
+    def printProdukte(self):    
+        for key, value in self.Produktthreads.items():
+            print('\r\n'+bbbold(key))
+            print(self.generateTable([Spielhilfe for Spielhilfe in SplittermondParser.Produkte if Spielhilfe.id in value])) 
 
 
-SplittermondParser = ProduktParser(Produktthreads= Produktthreads)
-
-print('Hier die Sammlung aller Produktbewertungsthreads, inklusive Durchschnittsbewertung und Ranking.')
-print('Ich versuche das Ganze auf aktuellen Stand zu halten. :)')
-print('Noch ist es nicht sonderlich spektakulär, einfach weil es noch nicht viele Produkte gibt. Aber ich hoffe das ändert sich mit der Zeit. :)')
-
-for key, value in Produktthreads.items():
-    print('\r\n'+bbbold(key))
-    print(generateTable([Spielhilfe for Spielhilfe in SplittermondParser.Produkte if Spielhilfe.id in value]))
-toc = time.clock()    
-# print(toc - tic)   
+if __name__ == '__main__':
+    SplittermondParser = ProduktParser(Produktthreads= Produktthreads)
+    print('Hier die Sammlung aller Produktbewertungsthreads, inklusive Durchschnittsbewertung und Ranking.')
+    print('Ich versuche das Ganze auf aktuellen Stand zu halten. :)')
+    print('Noch ist es nicht sonderlich spektakulär, einfach weil es noch nicht viele Produkte gibt. Aber ich hoffe das ändert sich mit der Zeit. :)')
+    SplittermondParser.printProdukte()
