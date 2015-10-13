@@ -7,8 +7,8 @@ from multiprocessing.dummy import Pool as ThreadPool
 
 # Collection of Thread IDs in several categories
 Produktthreads = OrderedDict([
-('Spielhilfen' , [1676, 1418, 2361, 2653, 3344, 3340, 3345, 3158, 3510]),
-('Kaufabenteuer' ,[2003, 2097, 2360, 2752, 3006, 3343, 3342]),
+('Spielhilfen' , [1676, 1418, 2361, 2653, 3344, 3340, 3341, 3345, 3158, 3510]),
+('Kaufabenteuer' ,[2003, 2097, 2360, 2752, 3006, 3343, 3342, 3523, 3524, 3525]),
 ('Kostenlos verfügbare Abenteuer' , [2097,2098, 2099, 2100, 2101, 2652, 2651])
 ])
 
