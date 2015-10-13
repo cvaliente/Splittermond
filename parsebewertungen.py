@@ -20,50 +20,65 @@ baseurl = "http://forum.splittermond.de/index.php?topic=%d.0"
 concurrent_parses = 4 
 
 
-
 def bbcode(tag, string, value = None):
+    """Return a text(string) enclosed by the bbcode tags"""
     if value:
         return'['+tag+'='+value+']'+string+'[/'+tag+']'
     else:        
         return'['+tag+']'+string+'[/'+tag+']'
 
 def bbcodeurl(urlstring,urlname):
+    """Return an bbcode url format for given url and description"""
     return bbcode('url',urlname, urlstring)
-    #return '[url='+urlstring+']'+urlname+'[/url]'
 
 def bbbold(text):
+    """Return the text with a bbcode bold tag"""    
     return bbcode(tag='b', string = text)
 
 def bbtt(text):
+    """Return the text with a bbcode tt tag"""    
     return bbcode(tag='tt', string = text)
 
 class bbtable():
+    """creates the frame of a bbcode table"""
+      
     def __init__(self,rows):
+        """needs the rows as input for this table"""  
         self.elements = rows
     
     def tablify(self, rows):
+        """adds start and end tags for tables"""  
         return str('[table]\r\n' + rows + '[/table]')    
     
     def __str__(self):
+        """prints table in bbcode format"""  
         return(self.tablify(''.join(str(row) for row in self.elements)))
 
 class tablerow(bbtable):    
+    """creates a bbcode table row with correct tags"""  
+        
     def cellify(self, rowfield):
+        """encloses cells with correct tags"""  
         return str('[td]' + str(rowfield)+'[/td]')
     
     def rowify(self, cells):
+        """encloses rows with the correct tags"""  
         return str('[tr]' + str(cells)+'[/tr]\r\n')
     
     def __str__(self):
+        """adds cell and row tags to elements"""  
         return(self.rowify(''.join(self.cellify(field) for field in self.elements)))
         
 
 class tableheaderrow(tablerow):
+    """adds a header row"""  
+    
     def cellify(self, rowfield):
         return str('[td]' + bbbold(rowfield)+bbtt('   ')+'[/td]')
 
 class ProduktParser():
-    def __init__(self, Produktthreads, Produkt = namedtuple('Produkt','name id url Stimmen Durchschnitt Median'), Produkte = [], baseurl = baseurl):
+    def __init__(self, Produktthreads, Produkt = namedtuple('Produkt','name id url Stimmen Durchschnitt Median'), Produkte = [], baseurl = baseurl):        
+        """set base properties: URLs, thread ids, format"""  
         self.Produkt = Produkt
         self.Produkte = Produkte
         self.baseurl = baseurl
@@ -72,7 +87,8 @@ class ProduktParser():
         self.pool = ThreadPool(concurrent_parses) 
         self.pool.map(self.getProdukt, self.bewertungen)
         
-    def getProdukt(self, threadid):
+    def getProdukt(self, threadid):      
+        """collect information for selected thread id"""  
         url=self.baseurl % threadid
         page=urllib.request.urlopen(url)
         soup = BeautifulSoup(page.read())
@@ -97,11 +113,13 @@ class ProduktParser():
         
     
     def generateTable(self, bewertungsthreads):
+        """"generate a table for the threads"""  
         return bbtable([tableheaderrow(['Platz', 'Bewertung', 'Median', 'Stimmen', 'Produkt'])] 
             + [tablerow([index+1, element.Durchschnitt, element.Median, element.Stimmen, bbcodeurl(element.url, element.name)]) 
                for index, element in enumerate(sorted(bewertungsthreads, key=attrgetter('Durchschnitt')))])
         
     def printProdukte(self):    
+        """"print the table"""  
         for key, value in self.Produktthreads.items():
             print('\r\n'+bbbold(key))
             print(self.generateTable([Spielhilfe for Spielhilfe in SplittermondParser.Produkte if Spielhilfe.id in value])) 
