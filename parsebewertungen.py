@@ -110,6 +110,5 @@ class ProduktParser():
 if __name__ == '__main__':
     SplittermondParser = ProduktParser(Produktthreads= Produktthreads)
     print('Hier die Sammlung aller Produktbewertungsthreads, inklusive Durchschnittsbewertung und Ranking.')
-    print('Ich versuche das Ganze auf aktuellen Stand zu halten. :)')
-    print('Noch ist es nicht sonderlich spektakulär, einfach weil es noch nicht viele Produkte gibt. Aber ich hoffe das ändert sich mit der Zeit. :)')
+    print('Das script ist verfügbar unter https://github.com/zaboron/Splittermond/blob/master/parsebewertungen.py')
     SplittermondParser.printProdukte()
