@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# coding=utf-8
+
 import urllib.request
 import statistics
 from bs4 import BeautifulSoup
@@ -7,9 +10,14 @@ from multiprocessing.dummy import Pool as ThreadPool
 
 # Collection of Thread IDs in several categories
 Produktthreads = OrderedDict([
-('Spielhilfen' , [1676, 1418, 2361, 2653, 3344, 3340, 3341, 3345, 3158, 3510]),
-('Kaufabenteuer' ,[2003, 2097, 2360, 2752, 3006, 3343, 3342, 3523, 3524, 3525]),
-('Kostenlos verfügbare Abenteuer' , [2097,2098, 2099, 2100, 2101, 2652, 2651])
+    ('Spielhilfen', [
+     1676, 1418, 2653, 3340, 3341, 3510]),
+    ('Zubehör', [
+     2361, 3345, 3158, 3344]),
+    ('Kaufabenteuer', [
+     2003, 2097, 2360, 2752, 3006, 3343, 3342, 3523, 3524, 3525]),
+    ('Kostenlos verfügbare Abenteuer',
+     [2097, 2098, 2099, 2100, 2101, 2652, 2651])
 ])
 
 
@@ -17,89 +25,102 @@ Produktthreads = OrderedDict([
 baseurl = "http://forum.splittermond.de/index.php?topic=%d.0"
 
 # Number of parallel threads (should be equal to number of CPU cores)
-concurrent_parses = 4 
+concurrent_parses = 4
 
 
-def bbcode(tag, string, value = None):
+def bbcode(tag, string, value=None):
     """Return a text(string) enclosed by the bbcode tags"""
     if value:
-        return'['+tag+'='+value+']'+string+'[/'+tag+']'
-    else:        
-        return'['+tag+']'+string+'[/'+tag+']'
+        return'[' + tag + '=' + value + ']' + string + '[/' + tag + ']'
+    else:
+        return'[' + tag + ']' + string + '[/' + tag + ']'
 
-def bbcodeurl(urlstring,urlname):
+
+def bbcodeurl(urlstring, urlname):
     """Return an bbcode url format for given url and description"""
-    return bbcode('url',urlname, urlstring)
+    return bbcode('url', urlname, urlstring)
+
 
 def bbbold(text):
-    """Return the text with a bbcode bold tag"""    
-    return bbcode(tag='b', string = text)
+    """Return the text with a bbcode bold tag"""
+    return bbcode(tag='b', string=text)
+
 
 def bbtt(text):
-    """Return the text with a bbcode tt tag"""    
-    return bbcode(tag='tt', string = text)
+    """Return the text with a bbcode tt tag"""
+    return bbcode(tag='tt', string=text)
+
 
 class bbtable():
+
     """creates the frame of a bbcode table"""
-      
-    def __init__(self,rows):
-        """needs the rows as input for this table"""  
+
+    def __init__(self, rows):
+        """needs the rows as input for this table"""
         self.elements = rows
-    
+
     def tablify(self, rows):
-        """adds start and end tags for tables"""  
-        return str('[table]\r\n' + rows + '[/table]')    
-    
+        """adds start and end tags for tables"""
+        return str('[table]\r\n' + rows + '[/table]')
+
     def __str__(self):
-        """prints table in bbcode format"""  
+        """prints table in bbcode format"""
         return(self.tablify(''.join(str(row) for row in self.elements)))
 
-class tablerow(bbtable):    
-    """creates a bbcode table row with correct tags"""  
-        
+
+class tablerow(bbtable):
+
+    """creates a bbcode table row with correct tags"""
+
     def cellify(self, rowfield):
-        """encloses cells with correct tags"""  
-        return str('[td]' + str(rowfield)+'[/td]')
-    
+        """encloses cells with correct tags"""
+        return str('[td]' + str(rowfield) + '[/td]')
+
     def rowify(self, cells):
-        """encloses rows with the correct tags"""  
-        return str('[tr]' + str(cells)+'[/tr]\r\n')
-    
+        """encloses rows with the correct tags"""
+        return str('[tr]' + str(cells) + '[/tr]\r\n')
+
     def __str__(self):
-        """adds cell and row tags to elements"""  
+        """adds cell and row tags to elements"""
         return(self.rowify(''.join(self.cellify(field) for field in self.elements)))
-        
+
 
 class tableheaderrow(tablerow):
-    """adds a header row"""  
-    
+
+    """adds a header row"""
+
     def cellify(self, rowfield):
-        return str('[td]' + bbbold(rowfield)+bbtt('   ')+'[/td]')
+        return str('[td]' + bbbold(rowfield) + bbtt('   ') + '[/td]')
+
 
 class ProduktParser():
-    def __init__(self, Produktthreads, Produkt = namedtuple('Produkt','name id url Stimmen Durchschnitt Median'), Produkte = [], baseurl = baseurl):        
-        """set base properties: URLs, thread ids, format"""  
+
+    def __init__(self, Produktthreads, Produkt=namedtuple('Produkt', 'name id url Stimmen Durchschnitt Median'), Produkte=[], baseurl=baseurl):
+        """set base properties: URLs, thread ids, format"""
         self.Produkt = Produkt
         self.Produkte = Produkte
         self.baseurl = baseurl
         self.Produktthreads = Produktthreads
-        self.bewertungen = set([item for sublist in self.Produktthreads.values() for item in sublist])
-        self.pool = ThreadPool(concurrent_parses) 
+        self.bewertungen = set(
+            [item for sublist in self.Produktthreads.values() for item in sublist])
+        self.pool = ThreadPool(concurrent_parses)
         self.pool.map(self.getProdukt, self.bewertungen)
-        
-    def getProdukt(self, threadid):      
-        """collect information for selected thread id"""  
-        url=self.baseurl % threadid
-        page=urllib.request.urlopen(url)
+
+    def getProdukt(self, threadid):
+        """collect information for selected thread id"""
+        url = self.baseurl % threadid
+        page = urllib.request.urlopen(url)
         soup = BeautifulSoup(page.read())
         Produktname = soup.find('title').string.split('/')[0].strip()
-        polls = soup.find('dl',{'class':'options'})
-        options = polls.findAll('dt',{'class':'middletext'})
-        votes = polls.findAll('span',{'class':'percentage'})
-        ergebnis = dict(zip([[int(s) for s in option.string.split() if s.isdigit()][0] for option in options], [int(vote.string.split(' ')[0]) for vote in votes]))
-        einzelvotes = [item for sublist in [[k] * v for k,v in ergebnis.items()] for item in sublist]
+        polls = soup.find('dl', {'class': 'options'})
+        options = polls.findAll('dt', {'class': 'middletext'})
+        votes = polls.findAll('span', {'class': 'percentage'})
+        ergebnis = dict(zip([[int(s) for s in option.string.split() if s.isdigit()][
+                        0] for option in options], [int(vote.string.split(' ')[0]) for vote in votes]))
+        einzelvotes = [
+            item for sublist in [[k] * v for k, v in ergebnis.items()] for item in sublist]
         try:
-            durchschnitt = str(round(statistics.mean(einzelvotes),2)) 
+            durchschnitt = str(round(statistics.mean(einzelvotes), 2))
             median = statistics.median(einzelvotes)
             if int(median) == median:
                 median = int(median)
@@ -109,24 +130,27 @@ class ProduktParser():
             durchschnitt = 'No votes yet'
             median = 'No votes yet'
             stimmen = 0
-        self.Produkte.append(self.Produkt(Produktname, threadid, url, stimmen, durchschnitt, median))
-        
-    
+        self.Produkte.append(
+            self.Produkt(Produktname, threadid, url, stimmen, durchschnitt, median))
+
     def generateTable(self, bewertungsthreads):
-        """"generate a table for the threads"""  
-        return bbtable([tableheaderrow(['Platz', 'Bewertung', 'Median', 'Stimmen', 'Produkt'])] 
-            + [tablerow([index+1, element.Durchschnitt, element.Median, element.Stimmen, bbcodeurl(element.url, element.name)]) 
-               for index, element in enumerate(sorted(bewertungsthreads, key=attrgetter('Durchschnitt')))])
-        
-    def printProdukte(self):    
-        """"print the table"""  
+        """"generate a table for the threads"""
+        return bbtable([tableheaderrow(['Platz', 'Bewertung', 'Median', 'Stimmen', 'Produkt'])]
+                       + [tablerow([index + 1, element.Durchschnitt, element.Median, element.Stimmen, bbcodeurl(element.url, element.name)])
+                          for index, element in enumerate(sorted(bewertungsthreads, key=attrgetter('Durchschnitt')))])
+
+    def printProdukte(self):
+        """"print the table"""
         for key, value in self.Produktthreads.items():
-            print('\r\n'+bbbold(key))
-            print(self.generateTable([Spielhilfe for Spielhilfe in SplittermondParser.Produkte if Spielhilfe.id in value])) 
+            print('\r\n' + bbbold(key))
+            print(self.generateTable(
+                [Spielhilfe for Spielhilfe in SplittermondParser.Produkte if Spielhilfe.id in value]))
 
 
 if __name__ == '__main__':
-    SplittermondParser = ProduktParser(Produktthreads= Produktthreads)
-    print('Hier die Sammlung aller Produktbewertungsthreads, inklusive Durchschnittsbewertung und Ranking.')
-    print('Das script ist verfügbar unter https://github.com/zaboron/Splittermond/blob/master/parsebewertungen.py')
+    SplittermondParser = ProduktParser(Produktthreads=Produktthreads)
+    print(
+        'Hier die Sammlung aller Produktbewertungsthreads, inklusive Durchschnittsbewertung und Ranking.')
+    print(
+        'Das script ist verfügbar unter https://github.com/zaboron/Splittermond/blob/master/parsebewertungen.py')
     SplittermondParser.printProdukte()
