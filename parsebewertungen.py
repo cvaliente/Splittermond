@@ -2,7 +2,7 @@
 # coding=utf-8
 
 import urllib.request
-import statistics
+from statistics import StatisticsError, mean
 from bs4 import BeautifulSoup
 from collections import namedtuple, OrderedDict
 from operator import attrgetter
@@ -95,7 +95,7 @@ class tableheaderrow(tablerow):
 
 class ProduktParser():
 
-    def __init__(self, Produktthreads, Produkt=namedtuple('Produkt', 'name id url Stimmen Durchschnitt Median'), Produkte=[], baseurl=baseurl):
+    def __init__(self, Produktthreads, Produkt=namedtuple('Produkt', 'name id url Stimmen Durchschnitt'), Produkte=[], baseurl=baseurl):
         """set base properties: URLs, thread ids, format"""
         self.Produkt = Produkt
         self.Produkte = Produkte
@@ -120,23 +120,18 @@ class ProduktParser():
         einzelvotes = [
             item for sublist in [[k] * v for k, v in ergebnis.items()] for item in sublist]
         try:
-            durchschnitt = str(round(statistics.mean(einzelvotes), 2))
-            median = statistics.median(einzelvotes)
-            if int(median) == median:
-                median = int(median)
-            median = str(median)
+            durchschnitt = str(round(mean(einzelvotes), 2))
             stimmen = len(einzelvotes)
-        except (ZeroDivisionError, statistics.StatisticsError) as e:
+        except (ZeroDivisionError, StatisticsError) as e:
             durchschnitt = 'No votes yet'
-            median = 'No votes yet'
             stimmen = 0
         self.Produkte.append(
-            self.Produkt(Produktname, threadid, url, stimmen, durchschnitt, median))
+            self.Produkt(Produktname, threadid, url, stimmen, durchschnitt))
 
     def generateTable(self, bewertungsthreads):
         """"generate a table for the threads"""
-        return bbtable([tableheaderrow(['Platz', 'Bewertung', 'Median', 'Stimmen', 'Produkt'])]
-                       + [tablerow([index + 1, element.Durchschnitt, element.Median, element.Stimmen, bbcodeurl(element.url, element.name)])
+        return bbtable([tableheaderrow(['Platz', 'Bewertung', 'Stimmen', 'Produkt'])]
+                       + [tablerow([index + 1, element.Durchschnitt, element.Stimmen, bbcodeurl(element.url, element.name)])
                           for index, element in enumerate(sorted(bewertungsthreads, key=attrgetter('Durchschnitt')))])
 
     def printProdukte(self):
