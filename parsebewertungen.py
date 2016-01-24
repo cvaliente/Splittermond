@@ -15,11 +15,25 @@ Produktthreads = OrderedDict([
     ('Zubehör', [
      2361, 3345, 3158, 3344]),
     ('Kaufabenteuer', [
-     2003, 2097, 2360, 2752, 3006, 3343, 3342, 3523, 3524, 3525, 2652, 2651]),
+     2003, 2097, 2360, 2752, 3006, 3343, 3342, 2652, 2651]),
     ('Kostenlos verfügbare Abenteuer',
      [2097, 2098, 2099, 2100, 2101, 2652, 2651])
 ])
 
+# maintain anthologies separately
+Anthologien = OrderedDict([
+                           ('Unter Wölfen',[
+                                            3523, 3524, 3525]),
+                           ('An den Küsten der Kristallsee',[
+                                                             3828, 3827, 3817, 3826])
+                           ])
+
+
+# Add anthologies to collection to avoid duplicates
+for Anthologie in Anthologien:
+    for threadid in Anthologien[Anthologie]:
+        if threadid not in Produktthreads['Kaufabenteuer']:
+            Produktthreads['Kaufabenteuer'].append(threadid)
 
 # URL of a thread (%d will be thread_id)
 baseurl = "http://forum.splittermond.de/index.php?topic=%d.0"
@@ -95,16 +109,18 @@ class tableheaderrow(tablerow):
 
 class ProduktParser():
 
-    def __init__(self, Produktthreads, Produkt=namedtuple('Produkt', 'name id url Stimmen Durchschnitt'), Produkte=[], baseurl=baseurl):
+    def __init__(self, Produktthreads, Produkt = namedtuple('Produkt', 'name id url Stimmen Durchschnitt'), Produkte = [], Anthologien = [], baseurl = baseurl):
         """set base properties: URLs, thread ids, format"""
         self.Produkt = Produkt
         self.Produkte = Produkte
         self.baseurl = baseurl
         self.Produktthreads = Produktthreads
+        self.Anthologien = Anthologien
         self.bewertungen = set(
             [item for sublist in self.Produktthreads.values() for item in sublist])
         self.pool = ThreadPool(concurrent_parses)
         self.pool.map(self.getProdukt, self.bewertungen)
+        self.getAnthologie()
 
     def getProdukt(self, threadid):
         """collect information for selected thread id"""
@@ -127,6 +143,24 @@ class ProduktParser():
             stimmen = 0
         self.Produkte.append(
             self.Produkt(Produktname, threadid, url, stimmen, durchschnitt))
+        
+    def getAnthologie(self):
+        for Anthologie in self.Anthologien:
+            Anthologiedurchschnittagg = 0
+            Anthologiestimmen = 0
+            for Spielhilfe in self.Produkte:
+                if Spielhilfe.id in self.Anthologien[Anthologie]:
+                    if  Spielhilfe.Durchschnitt != 'No votes yet':
+                        Anthologiestimmen += Spielhilfe.Stimmen  
+                        Anthologiedurchschnittagg += Spielhilfe.Stimmen * float(Spielhilfe.Durchschnitt)
+            if Anthologiestimmen == 0:
+                Anthologiedurchschnitt = 'No votes yet'
+            else:
+                Anthologiedurchschnitt = str(round(Anthologiedurchschnittagg/Anthologiestimmen, 2))
+                          
+            self.Produkte.append(
+                self.Produkt(Anthologie, 0, 0, Anthologiestimmen, Anthologiedurchschnitt))
+                    
 
     def generateTable(self, bewertungsthreads):
         """"generate a table for the threads"""
@@ -139,11 +173,15 @@ class ProduktParser():
         for key, value in self.Produktthreads.items():
             print('\r\n' + bbbold(key))
             print(self.generateTable(
-                [Spielhilfe for Spielhilfe in SplittermondParser.Produkte if Spielhilfe.id in value]))
+                [Spielhilfe for Spielhilfe in self.Produkte if Spielhilfe.id in value]))
+            
+        print('\r\n' + bbbold("Anthologien"))
+        print(self.generateTable(
+            [Spielhilfe for Spielhilfe in self.Produkte if Spielhilfe.name in [Anthologie for Anthologie in Anthologien]]))
 
 
 if __name__ == '__main__':
-    SplittermondParser = ProduktParser(Produktthreads=Produktthreads)
+    SplittermondParser = ProduktParser(Produktthreads=Produktthreads, Anthologien=Anthologien)
     print(
         'Hier die Sammlung aller Produktbewertungsthreads, inklusive Durchschnittsbewertung und Ranking.')
     print(
