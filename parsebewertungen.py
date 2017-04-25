@@ -27,7 +27,7 @@ Anthologien = OrderedDict([
                            ('Zwischen den Welten',[
                                             5009, 5010, 5011]),
                            ('An den Küsten der Kristallsee',[
-                                            3828, 3827, 3817, 3826])
+                                                             3828, 3827, 3817, 3826]),
                            ('Alter Friede, neuer Streit',[
                                             5173, 5174, 5175])
                            ])
