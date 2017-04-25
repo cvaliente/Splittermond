@@ -11,11 +11,11 @@ from multiprocessing.dummy import Pool as ThreadPool
 # Collection of Thread IDs in several categories
 Produktthreads = OrderedDict([
     ('Spielhilfen', [
-     1676, 1418, 2653, 3340, 3341, 3510, 4023, 4241, 4389, 4682, 4681]),
+     1676, 1418, 2653, 3340, 3341, 3510, 4023, 4241, 4389, 4682, 4681, 5170, 4868, 5089]),
     ('Zubehör', [
-     2361, 3345, 3158, 3344]),
+     2361, 3345, 3158, 3344, 5115]),
     ('Kaufabenteuer', [
-     2003, 2097, 2360, 2752, 3006, 3343, 3342, 3523, 3524, 3525, 2652, 2651, 3817, 4098, 4244, 4245, 4252, 4302, 4690]),
+     2003, 2097, 2360, 2752, 3006, 3343, 3342, 3523, 3524, 3525, 2652, 2651, 3817, 4098, 4244, 4245, 4252, 4302, 4690, 4744, 4745, 5171, 5175, 5174, 5172, 5173]),
     ('Kostenlos verfügbare Abenteuer',
      [2097, 2098, 2099, 2100, 2101, 2652, 2651, 4253])
 ])
@@ -24,8 +24,12 @@ Produktthreads = OrderedDict([
 Anthologien = OrderedDict([
                            ('Unter Wölfen',[
                                             3523, 3524, 3525]),
+                           ('Zwischen den Welten',[
+                                            5009, 5010, 5011]),
                            ('An den Küsten der Kristallsee',[
-                                                             3828, 3827, 3817, 3826])
+                                            3828, 3827, 3817, 3826])
+                           ('Alter Friede, neuer Streit',[
+                                            5173, 5174, 5175])
                            ])
 
 
