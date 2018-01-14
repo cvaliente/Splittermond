@@ -11,11 +11,11 @@ from multiprocessing.dummy import Pool as ThreadPool
 # Collection of Thread IDs in several categories
 Produktthreads = OrderedDict([
     ('Spielhilfen', [
-     1676, 1418, 2653, 3340, 3341, 3510, 4023, 4241, 4389, 4682, 4681, 5170, 4868, 5089]),
+     1676, 1418, 2653, 3340, 3341, 3510, 4023, 4241, 4389, 4682, 4681, 5170, 4868, 5089, 5414, 5668, 5785]),
     ('Zubehör', [
-     2361, 3345, 3158, 3344, 5115]),
+     2361, 3345, 3158, 3344, 5115, 5550]),
     ('Kaufabenteuer', [
-     2003, 2097, 2360, 2752, 3006, 3343, 3342, 3523, 3524, 3525, 2652, 2651, 3817, 4098, 4244, 4245, 4252, 4302, 4690, 4744, 4745, 5171, 5175, 5174, 5172, 5173]),
+     2003, 2097, 2360, 2752, 3006, 3343, 3342, 3523, 3524, 3525, 2652, 2651, 3817, 4098, 4244, 4245, 4252, 4302, 4690, 4744, 4745, 5171, 5175, 5174, 5172, 5173, 5373, 5538, 5549, 5537, 5536, 5535, 5696, 5787, 5786]),
     ('Kostenlos verfügbare Abenteuer',
      [2097, 2098, 2099, 2100, 2101, 2652, 2651, 4253])
 ])
@@ -29,7 +29,9 @@ Anthologien = OrderedDict([
                            ('An den Küsten der Kristallsee',[
                                                              3828, 3827, 3817, 3826]),
                            ('Alter Friede, neuer Streit',[
-                                            5173, 5174, 5175])
+                                            5173, 5174, 5175]),
+                           ('Verwunschene Mauern',[
+                                            5537, 5536, 5535])
                            ])
 
 
@@ -130,7 +132,7 @@ class ProduktParser():
         """collect information for selected thread id"""
         url = self.baseurl % threadid
         page = urllib.request.urlopen(url)
-        soup = BeautifulSoup(page.read())
+        soup = BeautifulSoup(page.read(), "html.parser")
         Produktname = soup.find('title').string.split('/')[0].strip()
         polls = soup.find('dl', {'class': 'options'})
         options = polls.findAll('dt', {'class': 'middletext'})
